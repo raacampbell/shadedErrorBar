@@ -29,6 +29,7 @@ function varargout=shadedErrorBar(x,y,errBar,varargin)
 %               to be openGl. However, if this is saved as .eps the
 %               resulting file will contain a raster not a vector
 %               image. 
+% 'logY' - [false by default]. If true, plot on a log y scale
 %
 %
 % Outputs
@@ -72,12 +73,15 @@ params = inputParser;
 params.CaseSensitive = false;
 params.addParameter('lineProps', '-k', @(x) ischar(x) | iscell(x));
 params.addParameter('transparent', false, @(x) islogical (x) || x==0 || x==1);
+params.addParameter('logY', false, @(x) islogical (x) || x==0 || x==1);
 
 params.parse(varargin{:});
 
 %Extract values from the inputParser
 lineProps =  params.Results.lineProps;
 transparent =  params.Results.transparent;
+logY = params.Results.logY;
+
 
 
 %Process y using function handles if needed to make the error bar
@@ -126,7 +130,11 @@ if nargin<5, transparent=0; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 % Plot to get the parameters of the line 
-H.mainLine=plot(x,y,lineProps{:});
+if ~logY
+    H.mainLine=plot(x,y,lineProps{:});
+else
+    H.mainLine=semilogy(x,y,lineProps{:});
+end
 
 
 % Work out the color of the shaded region and associated lines
@@ -174,9 +182,13 @@ H.patch=patch(xP,yP,1,'facecolor',patchColor,...
 
 
 %Make pretty edges around the patch. 
-H.edge(1)=plot(x,lE,'-','color',edgeColor);
-H.edge(2)=plot(x,uE,'-','color',edgeColor);
-
+if logY
+    H.edge(1)=plot(x,lE,'-','color',edgeColor);
+    H.edge(2)=plot(x,uE,'-','color',edgeColor);
+else
+    H.edge(1)=semilogy(x,lE,'-','color',edgeColor);
+    H.edge(2)=semilogy(x,uE,'-','color',edgeColor);
+end
 %Now replace the line (this avoids having to bugger about with z coordinates)
 uistack(H.mainLine,'top')
 

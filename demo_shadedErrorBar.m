@@ -1,4 +1,4 @@
-function demo_shadedErrorBar
+function H=demo_shadedErrorBar
 % demo function for shadedErrorBar
 %
 % function demo_shadedErrorBar
@@ -54,14 +54,6 @@ y=randn(30,length(x));
 y = bsxfun(@times,y,x.^2);
 y = bsxfun(@plus,y,x.^2);
 
-shadedErrorBar(x,y,{@mean,@std}); 
-set(gca,'YScale','log')
+H=shadedErrorBar(x,y,{@mean,@std},'logY',true); 
 
-subplot(rows,cols,4)
-%log space
-x=1:10:300;
-y=randn(30,length(x));
-y = bsxfun(@times,y,x.^2);
-y = bsxfun(@plus,y,x.^2);
 
-%semilogy(x,mean(y),'-r')
