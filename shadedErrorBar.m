@@ -1,11 +1,14 @@
-function varargout=shadedErrorBar(x,y,errBar,lineProps,transparent)
-% function H=shadedErrorBar(x,y,errBar,lineProps,transparent)
+function varargout=shadedErrorBar(x,y,errBar,varargin)
+% generate continuous error bar area around a line plot
+%
+% function H=shadedErrorBar(x,y,errBar,...)
 %
 % Purpose 
 % Makes a 2-d line plot with a pretty shaded error bar made
 % using patch. Error bar color is chosen automatically.
 %
-% Inputs
+%
+% Inputs (required)
 % x - vector of x values [optional, can be left empty]
 % y - vector of y values or a matrix of n observations by m cases
 %     where m has length(x);
@@ -16,31 +19,44 @@ function varargout=shadedErrorBar(x,y,errBar,lineProps,transparent)
 %          cellArray of two function handles. The first defines which
 %          statistic the line should be and the second defines the
 %          error bar.
-% lineProps - [optional,'-k' by default] defines the properties of
+%
+% Inputs (optional, param/value pairs)
+% 'lineProps' - ['-k' by default] defines the properties of
 %             the data line. e.g.:    
 %             'or-', or {'-or','markerfacecolor',[1,0.2,0.2]}
-% transparent - [optional, 0 by default] if ==1 the shaded error
+% 'transparent' - [false  by default] if true, the shaded error
 %               bar is made transparent, which forces the renderer
 %               to be openGl. However, if this is saved as .eps the
 %               resulting file will contain a raster not a vector
 %               image. 
 %
+%
 % Outputs
 % H - a structure of handles to the generated plot objects.     
 %
 %
-% Examples
-% y=randn(30,80); x=1:size(y,2);
-% shadedErrorBar(x,mean(y,1),std(y),'g');
-% shadedErrorBar(x,y,{@median,@std},{'r-o','markerfacecolor','r'});    
-% shadedErrorBar([],y,{@median,@std},{'r-o','markerfacecolor','r'});    
+% Examples:
+% y=randn(30,80); 
+% x=1:size(y,2);
 %
-% Overlay two transparent lines
-% y=randn(30,80)*10; x=(1:size(y,2))-40;
-% shadedErrorBar(x,y,{@mean,@std},'-r',1); 
+% 1)
+% shadedErrorBar(x,mean(y,1),std(y),'lineprops','g');
+%
+% 2)
+% shadedErrorBar(x,y,{@median,@std},'lineprops',{'r-o','markerfacecolor','r'});    
+%
+% 3)
+% shadedErrorBar([],y,{@median,@(x) std(x)*1.96},'lineprops',{'r-o','markerfacecolor','k'});    
+%
+% 4)
+% Overlay two transparent lines:
+% clf
+% y=randn(30,80)*10; 
+% x=(1:size(y,2))-40;
+% shadedErrorBar(x,y,{@mean,@std},'lineprops','-r','transparent',1); 
 % hold on
 % y=ones(30,1)*x; y=y+0.06*y.^2+randn(size(y))*10;
-% shadedErrorBar(x,y,{@mean,@std},'-b',1); 
+% shadedErrorBar(x,y,{@mean,@std},'lineprops','-b','transparent',1); 
 % hold off
 %
 %
@@ -49,8 +65,19 @@ function varargout=shadedErrorBar(x,y,errBar,lineProps,transparent)
 
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-% Error checking    
-narginchk(3,5)
+% Parse input arguments
+narginchk(3,inf)
+
+params = inputParser;
+params.CaseSensitive = false;
+params.addParameter('lineProps', '-k', @(x) ischar(x) | iscell(x));
+params.addParameter('transparent', false, @(x) islogical (x) || x==0 || x==1);
+
+params.parse(varargin{:});
+
+%Extract values from the inputParser
+lineProps =  params.Results.lineProps;
+transparent =  params.Results.transparent;
 
 
 %Process y using function handles if needed to make the error bar
@@ -155,7 +182,6 @@ uistack(H.mainLine,'top')
 
 
 if ~holdStatus, hold off, end
-
 
 if nargout==1
     varargout{1}=H;

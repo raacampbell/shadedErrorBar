@@ -15,12 +15,15 @@ cols=2;
 clf
 
 
-
 subplot(rows,cols,1)
-y=randn(30,80); x=1:size(y,2);
-shadedErrorBar(x,mean(y,1),std(y),'g');
-shadedErrorBar(x,y,{@median,@std},{'r-o','markerfacecolor','r'});    
-shadedErrorBar([],y,{@median,@std},{'r-o','markerfacecolor','r'});    
+%Basic usage
+y=randn(30,80); 
+x=1:size(y,2);
+shadedErrorBar(x,mean(y,1),std(y))
+hold on
+y=randn(30,80)+3; 
+%Define a color
+shadedErrorBar(x,mean(y,1),std(y),'lineprops','g');
 xlim([0,81])
 
 
@@ -30,14 +33,15 @@ subplot(rows,cols,2)
 y=randn(30,80)*5; 
 x=(1:size(y,2))-40;
 yP = sin( linspace(-2*pi,2*pi,length(x)) )*20;
-y = bsxfun(@plus,y,yP)+60;
-
-shadedErrorBar(x,y,{@mean,@std},'-r',1); 
+y = bsxfun(@plus,y,yP);
+shadedErrorBar(x,y+60,{@mean,@std},'lineprops','-r','transparent',1); 
 
 hold on
+shadedErrorBar(x,2*y+20,{@mean,@std},'lineprops','-g','transparent',1); 
+
 y=ones(30,1)*x; 
 y=y+0.06*y.^2+randn(size(y))*10;
-shadedErrorBar(x,y,{@mean,@std},'-b',1); 
+shadedErrorBar(x,y,{@mean,@std},'lineprops','-b','transparent',true); 
 hold off
 
 grid on
@@ -50,7 +54,7 @@ y=randn(30,length(x));
 y = bsxfun(@times,y,x.^2);
 y = bsxfun(@plus,y,x.^2);
 
-shadedErrorBar(x,y,{@mean,@std},'-r',1); 
+shadedErrorBar(x,y,{@mean,@std}); 
 set(gca,'YScale','log')
 
 subplot(rows,cols,4)
@@ -60,4 +64,4 @@ y=randn(30,length(x));
 y = bsxfun(@times,y,x.^2);
 y = bsxfun(@plus,y,x.^2);
 
-semilogy(x,mean(y),'-r')
+%semilogy(x,mean(y),'-r')
