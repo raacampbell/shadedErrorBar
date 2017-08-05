@@ -1,7 +1,7 @@
 function varargout=shadedErrorBar(x,y,errBar,varargin)
 % generate continuous error bar area around a line plot
 %
-% function H=shadedErrorBar(x,y,errBar,...)
+% function H=shadedErrorBar(x,y,errBar, ...)
 %
 % Purpose 
 % Makes a 2-d line plot with a pretty shaded error bar made
@@ -24,16 +24,16 @@ function varargout=shadedErrorBar(x,y,errBar,varargin)
 % 'lineProps' - ['-k' by default] defines the properties of
 %             the data line. e.g.:    
 %             'or-', or {'-or','markerfacecolor',[1,0.2,0.2]}
-% 'transparent' - [false  by default] if true, the shaded error
-%               bar is made transparent, which forces the renderer
-%               to be openGl. However, if this is saved as .eps the
-%               resulting file will contain a raster not a vector
-%               image. 
-% 'logY' - [false by default]. If true, plot on a log y scale
+% 'transparent' - [true  by default] if true, the shaded error
+%               bar is made transparent. However, for a transparent
+%               vector image you will need to save as PDF, not EPS,
+%               and set the figure renderer to "painters". An EPS 
+%               will only be transparent if you set the renderer 
+%               to OpenGL, however this makes a raster image.
 %
 %
 % Outputs
-% H - a structure of handles to the generated plot objects.     
+% H - a structure of handles to the generated plot objects.
 %
 %
 % Examples:
@@ -44,44 +44,43 @@ function varargout=shadedErrorBar(x,y,errBar,varargin)
 % shadedErrorBar(x,mean(y,1),std(y),'lineprops','g');
 %
 % 2)
-% shadedErrorBar(x,y,{@median,@std},'lineprops',{'r-o','markerfacecolor','r'});    
+% shadedErrorBar(x,y,{@median,@std},'lineprops',{'r-o','markerfacecolor','r'});
 %
 % 3)
-% shadedErrorBar([],y,{@median,@(x) std(x)*1.96},'lineprops',{'r-o','markerfacecolor','k'});    
+% shadedErrorBar([],y,{@median,@(x) std(x)*1.96},'lineprops',{'r-o','markerfacecolor','k'});
 %
 % 4)
 % Overlay two transparent lines:
 % clf
 % y=randn(30,80)*10; 
 % x=(1:size(y,2))-40;
-% shadedErrorBar(x,y,{@mean,@std},'lineprops','-r','transparent',1); 
+% shadedErrorBar(x,y,{@mean,@std},'lineprops','-r','transparent',1);
 % hold on
 % y=ones(30,1)*x; y=y+0.06*y.^2+randn(size(y))*10;
-% shadedErrorBar(x,y,{@mean,@std},'lineprops','-b','transparent',1); 
+% shadedErrorBar(x,y,{@mean,@std},'lineprops','-b','transparent',1);
 % hold off
 %
 %
 % Rob Campbell - November 2009
 
 
-    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parse input arguments
 narginchk(3,inf)
 
 params = inputParser;
 params.CaseSensitive = false;
 params.addParameter('lineProps', '-k', @(x) ischar(x) | iscell(x));
-params.addParameter('transparent', false, @(x) islogical (x) || x==0 || x==1);
-params.addParameter('logY', false, @(x) islogical (x) || x==0 || x==1);
+params.addParameter('transparent', true, @(x) islogical (x) || x==0 || x==1);
 
 params.parse(varargin{:});
 
 %Extract values from the inputParser
 lineProps =  params.Results.lineProps;
 transparent =  params.Results.transparent;
-logY = params.Results.logY;
 
+if ~iscell(lineProps), lineProps={lineProps}; end
 
 
 %Process y using function handles if needed to make the error bar
@@ -116,47 +115,29 @@ if length(x) ~= length(errBar)
     error('length(x) must equal length(errBar)')
 end
 
-%Set default options
-defaultProps={'-k'};
-if nargin<4, lineProps=defaultProps; end
-if isempty(lineProps), lineProps=defaultProps; end
-if ~iscell(lineProps), lineProps={lineProps}; end
-
-if nargin<5, transparent=0; end
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plot to get the parameters of the line
+H.mainLine=plot(x,y,lineProps{:});
 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-% Plot to get the parameters of the line 
-if ~logY
-    H.mainLine=plot(x,y,lineProps{:});
-else
-    H.mainLine=semilogy(x,y,lineProps{:});
-end
-
-
-% Work out the color of the shaded region and associated lines
-% Using alpha requires the render to be openGL and so you can't
-% save a vector image. On the other hand, you need alpha if you're
-% overlaying lines. There we have the option of choosing alpha or a
-% de-saturated solid colour for the patch surface .
+% Work out the color of the shaded region and associated lines.
+% Here we have the option of choosing alpha or a de-saturated
+% solid colour for the patch surface.
 
 col=get(H.mainLine,'color');
 edgeColor=col+(1-col)*0.55;
-patchSaturation=0.15; %How de-saturated or transparent to make patch
+patchSaturation=0.15; % How de-saturated or transparent to make patch
 if transparent
     faceAlpha=patchSaturation;
     patchColor=col;
-    set(gcf,'renderer','openGL')
 else
     faceAlpha=1;
     patchColor=col+(1-col)*(1-patchSaturation);
-    set(gcf,'renderer','painters')
 end
 
-    
+
 %Calculate the error bars
 uE=y+errBar(1,:);
 lE=y-errBar(2,:);
@@ -176,19 +157,16 @@ xP(isnan(yP))=[];
 yP(isnan(yP))=[];
 
 
-H.patch=patch(xP,yP,1,'facecolor',patchColor,...
-              'edgecolor','none',...
+H.patch=patch(xP,yP,1,'facecolor',patchColor, ...
+              'edgecolor','none', ...
               'facealpha',faceAlpha);
 
 
 %Make pretty edges around the patch. 
-if logY
-    H.edge(1)=plot(x,lE,'-','color',edgeColor);
-    H.edge(2)=plot(x,uE,'-','color',edgeColor);
-else
-    H.edge(1)=semilogy(x,lE,'-','color',edgeColor);
-    H.edge(2)=semilogy(x,uE,'-','color',edgeColor);
-end
+H.edge(1)=plot(x,lE,'-','color',edgeColor);
+H.edge(2)=plot(x,uE,'-','color',edgeColor);
+
+
 %Now replace the line (this avoids having to bugger about with z coordinates)
 uistack(H.mainLine,'top')
 
