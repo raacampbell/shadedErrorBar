@@ -30,6 +30,8 @@ function varargout=shadedErrorBar(x,y,errBar,varargin)
 %               and set the figure renderer to "painters". An EPS 
 %               will only be transparent if you set the renderer 
 %               to OpenGL, however this makes a raster image.
+% 'patchSaturation'- [0.2 by default] The saturation of the patch color.
+%
 %
 %
 % Outputs
@@ -72,19 +74,20 @@ narginchk(3,inf)
 params = inputParser;
 params.CaseSensitive = false;
 params.addParameter('lineProps', '-k', @(x) ischar(x) | iscell(x));
-params.addParameter('transparent', true, @(x) islogical (x) || x==0 || x==1);
+params.addParameter('transparent', true, @(x) islogical(x) || x==0 || x==1);
+params.addParameter('patchSaturation', 0.2, @(x) isnumeric(x) && x>=0 && x<=1);
 
 params.parse(varargin{:});
 
 %Extract values from the inputParser
 lineProps =  params.Results.lineProps;
 transparent =  params.Results.transparent;
+patchSaturation = params.Results.patchSaturation;
 
 if ~iscell(lineProps), lineProps={lineProps}; end
 
 
-%Process y using function handles if needed to make the error bar
-%dynamically
+%Process y using function handles if needed to make the error bar dynamically
 if iscell(errBar) 
     fun1=errBar{1};
     fun2=errBar{2};
@@ -116,6 +119,10 @@ if length(x) ~= length(errBar)
 end
 
 
+%Log the hold status so we don't change
+initialHoldStatus=ishold;
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot to get the parameters of the line
@@ -125,16 +132,15 @@ H.mainLine=plot(x,y,lineProps{:});
 % Work out the color of the shaded region and associated lines.
 % Here we have the option of choosing alpha or a de-saturated
 % solid colour for the patch surface.
+mainLineColor=get(H.mainLine,'color');
+edgeColor=mainLineColor+(1-mainLineColor)*0.55;
 
-col=get(H.mainLine,'color');
-edgeColor=col+(1-col)*0.55;
-patchSaturation=0.15; % How de-saturated or transparent to make patch
 if transparent
     faceAlpha=patchSaturation;
-    patchColor=col;
+    patchColor=mainLineColor;
 else
     faceAlpha=1;
-    patchColor=col+(1-col)*(1-patchSaturation);
+    patchColor=mainLineColor+(1-mainLineColor)*(1-patchSaturation);
 end
 
 
@@ -144,8 +150,8 @@ lE=y-errBar(2,:);
 
 
 %Add the patch error bar
-holdStatus=ishold;
-if ~holdStatus, hold on,  end
+
+if ~initialHoldStatus, hold on,  end
 
 
 %Make the patch
@@ -167,11 +173,11 @@ H.edge(1)=plot(x,lE,'-','color',edgeColor);
 H.edge(2)=plot(x,uE,'-','color',edgeColor);
 
 
-%Now replace the line (this avoids having to bugger about with z coordinates)
-uistack(H.mainLine,'top')
+
+uistack(H.mainLine,'top') % Bring the main line to the top
 
 
-if ~holdStatus, hold off, end
+if ~initialHoldStatus, hold off, end
 
 if nargout==1
     varargout{1}=H;
