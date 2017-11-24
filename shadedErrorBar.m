@@ -121,64 +121,69 @@ end
 
 %Log the hold status so we don't change
 initialHoldStatus=ishold;
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plot to get the parameters of the line
-H.mainLine=plot(x,y,lineProps{:});
-
-
-% Work out the color of the shaded region and associated lines.
-% Here we have the option of choosing alpha or a de-saturated
-% solid colour for the patch surface.
-mainLineColor=get(H.mainLine,'color');
-edgeColor=mainLineColor+(1-mainLineColor)*0.55;
-
-if transparent
-    faceAlpha=patchSaturation;
-    patchColor=mainLineColor;
-else
-    faceAlpha=1;
-    patchColor=mainLineColor+(1-mainLineColor)*(1-patchSaturation);
-end
-
-
-%Calculate the error bars
-uE=y+errBar(1,:);
-lE=y-errBar(2,:);
-
-
-%Add the patch error bar
-
 if ~initialHoldStatus, hold on,  end
 
-
-%Make the patch
-yP=[lE,fliplr(uE)];
-xP=[x,fliplr(x)];
-
-%remove nans otherwise patch won't work
-xP(isnan(yP))=[];
-yP(isnan(yP))=[];
-
-
-H.patch=patch(xP,yP,1,'facecolor',patchColor, ...
-              'edgecolor','none', ...
-              'facealpha',faceAlpha);
-
-
-%Make pretty edges around the patch. 
-H.edge(1)=plot(x,lE,'-','color',edgeColor);
-H.edge(2)=plot(x,uE,'-','color',edgeColor);
-
-
-
-uistack(H.mainLine,'top') % Bring the main line to the top
-
+H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation);
 
 if ~initialHoldStatus, hold off, end
 
 if nargout==1
     varargout{1}=H;
 end
+
+
+
+function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Plot to get the parameters of the line
+    H.mainLine=plot(x,y,lineProps{:});
+
+
+    % Work out the color of the shaded region and associated lines.
+    % Here we have the option of choosing alpha or a de-saturated
+    % solid colour for the patch surface.
+    mainLineColor=get(H.mainLine,'color');
+    edgeColor=mainLineColor+(1-mainLineColor)*0.55;
+
+    if transparent
+        faceAlpha=patchSaturation;
+        patchColor=mainLineColor;
+    else
+        faceAlpha=1;
+        patchColor=mainLineColor+(1-mainLineColor)*(1-patchSaturation);
+    end
+
+
+    %Calculate the error bars
+    uE=y-errBar(1,:);
+    lE=y+errBar(2,:);
+
+
+    %Add the patch error bar
+
+
+
+    %Make the patch
+    yP=[lE,fliplr(uE)];
+    xP=[x,fliplr(x)];
+
+    %remove nans otherwise patch won't work
+    xP(isnan(yP))=[];
+    yP(isnan(yP))=[];
+
+
+    H.patch=patch(xP,yP,1,'facecolor',patchColor, ...
+                  'edgecolor','none', ...
+                  'facealpha',faceAlpha);
+
+
+    %Make pretty edges around the patch. 
+    H.edge(1)=plot(x,lE,'-','color',edgeColor);
+    H.edge(2)=plot(x,uE,'-','color',edgeColor);
+
+
+
+    uistack(H.mainLine,'top') % Bring the main line to the top
+
+

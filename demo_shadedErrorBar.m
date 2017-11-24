@@ -96,7 +96,7 @@ yP = cos( linspace(-2*pi,2*pi,length(x)) )*10;
 y = bsxfun(@plus,y,yP);
 
 
-shadedErrorBar(x, y, {@mean,@std}, 'lineprops', '-r');
+shadedErrorBar(x, y, {@mean,@std}, 'lineprops', '-r')
 
 
 
