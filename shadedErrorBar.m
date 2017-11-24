@@ -94,13 +94,13 @@ if iscell(errBar)
     errBar=fun2(y);
     y=fun1(y);
 else
-    y=y(:)';
+    y=y(:).';
 end
 
 if isempty(x)
     x=1:length(y);
 else
-    x=x(:)';
+    x=x(:).';
 end
 
 
