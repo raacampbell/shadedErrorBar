@@ -18,6 +18,7 @@ yP = sin( linspace(-2*pi,2*pi,length(x)) )*20;
 y = bsxfun(@plus,y,yP)+60;
 
 % Make the plot
+clf
 shadedErrorBar(x,y,{@mean,@std}); 
 
 % Overlay the raw data
@@ -34,12 +35,14 @@ grid on
 ### Overlaying multiple lines
 ```
 % Prepare data for first line
-hold on
 y=ones(30,1)*x; 
 y=y+0.06*y.^2+randn(size(y))*10;
+
+clf
 shadedErrorBar(x,y,{@mean,@std},'lineprops','-b','patchSaturation',0.33)
 
 % Overlay second line
+hold on
 shadedErrorBar(x,2*y+20,{@mean,@std},'lineprops',{'-go','MarkerFaceColor','g'});
 
 %Overlay third line
@@ -66,6 +69,7 @@ yP = sin( linspace(-2*pi,2*pi,length(x)) )*20;
 y = bsxfun(@plus,y,yP);
 
 % Plot
+clf
 s = shadedErrorBar(x, y, {@mean,@std}, 'lineprops', '-r');
 
 % Set face and edge properties
