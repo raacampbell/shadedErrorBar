@@ -173,9 +173,15 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
     yP(isnan(yP))=[];
 
 
-    H.patch=patch(xP,yP,1,'facecolor',patchColor, ...
-                  'edgecolor','none', ...
-                  'facealpha',faceAlpha);
+    if(isdatetime(x))
+        H.patch=patch(datenum(xP),yP,1);
+    else
+        H.patch=patch(xP,yP,1);
+    end
+
+    set(H.patch,'facecolor',patchColor, ...
+        'edgecolor','none', ...
+        'facealpha',faceAlpha)
 
 
     %Make pretty edges around the patch. 
