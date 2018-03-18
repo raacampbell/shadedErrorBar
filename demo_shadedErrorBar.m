@@ -98,5 +98,10 @@ y = bsxfun(@plus,y,yP);
 
 shadedErrorBar(x, y, {@mean,@std}, 'lineprops', '-r')
 
+hold on
 
+y=mean(y)+16;
+errbar = [2*ones(1,length(x)) ; 4*ones(1,length(x))];
+
+shadedErrorBar(x, y, errbar, 'lineprops', '-g')
 
