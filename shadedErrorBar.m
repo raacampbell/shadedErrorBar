@@ -15,10 +15,10 @@ function varargout=shadedErrorBar(x,y,errBar,varargin)
 % errBar - if a vector we draw symmetric errorbars. If it has a size
 %          of [2,length(x)] then we draw asymmetric error bars with
 %          row 1 being the upper bar and row 2 being the lower bar
-%          (with respect to y). ** alternatively ** errBar can be a
-%          cellArray of two function handles. The first defines which
-%          statistic the line should be and the second defines the
-%          error bar.
+%          (with respect to y -- see demo). ** alternatively ** 
+%          errBar can be a cellArray of two function handles. The 
+%          first defines statistic the line should be and the second 
+%          defines the error bar.
 %
 % Inputs (optional, param/value pairs)
 % 'lineProps' - ['-k' by default] defines the properties of
@@ -137,6 +137,7 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Plot to get the parameters of the line
+
     H.mainLine=plot(x,y,lineProps{:});
 
 
@@ -156,8 +157,8 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
 
 
     %Calculate the error bars
-    uE=y-errBar(1,:);
-    lE=y+errBar(2,:);
+    uE=y+errBar(1,:);
+    lE=y-errBar(2,:);
 
 
     %Add the patch error bar
