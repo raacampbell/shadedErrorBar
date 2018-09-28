@@ -99,3 +99,6 @@ set(gca,'XTickLabel',[],'YTickLabel',[])
 * Parameter/value pairs for input arguments greater than 3.
 * Transparency on by default.
 * No longer changes the renderer.
+
+# Licensing 
+This code is licensed under GPL v3. See license file in the repository. 
