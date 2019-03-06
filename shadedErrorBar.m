@@ -175,9 +175,9 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
 
 
     if(isdatetime(x))
-        H.patch=patch(datenum(xP),yP,1);
+        H.patch=patch(datenum(xP),yP,1,'HandleVisibility','off');
     else
-        H.patch=patch(xP,yP,1);
+        H.patch=patch(xP,yP,1,'HandleVisibility','off');
     end
 
     set(H.patch,'facecolor',patchColor, ...
@@ -186,8 +186,8 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
 
 
     %Make pretty edges around the patch. 
-    H.edge(1)=plot(x,lE,'-','color',edgeColor);
-    H.edge(2)=plot(x,uE,'-','color',edgeColor);
+    H.edge(1)=plot(x,lE,'-','color',edgeColor,'HandleVisibility','off');
+    H.edge(2)=plot(x,uE,'-','color',edgeColor,'HandleVisibility','off');
 
 
 
