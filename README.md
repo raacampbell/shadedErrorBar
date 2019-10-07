@@ -100,5 +100,8 @@ set(gca,'XTickLabel',[],'YTickLabel',[])
 * Transparency on by default.
 * No longer changes the renderer.
 
+# Contributing
+If you wish to contribute please fork the repo, check out the `dev` branch and make your changes there, then file a pull request describing what you did. 
+
 # Licensing 
 This code is licensed under GPL v3. See license file in the repository. 
