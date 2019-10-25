@@ -68,13 +68,18 @@ function varargout=shadedErrorBar(x,y,errBar,varargin)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Parse input arguments
 narginchk(3,inf)
 
 params = inputParser;
 params.CaseSensitive = false;
 params.addParameter('lineProps', '-k', @(x) ischar(x) | iscell(x));
-params.addParameter('transparent', true, @(x) islogical(x) || x==0 || x==1);
+if (sum( size(ver('MATLAB'))) > 0  )
+  params.addParameter('transparent', true, @(x) islogical(x) || x==0 || x==1);
+elseif (sum( size(ver('Octave'))) > 0  )
+  params.addParameter('transparent', false, @(x) islogical(x) || x==0 || x==1);
+end
 params.addParameter('patchSaturation', 0.2, @(x) isnumeric(x) && x>=0 && x<=1);
 
 params.parse(varargin{:});
@@ -99,7 +104,7 @@ end
 
 if isempty(x)
     x=1:length(y);
-else
+elseif sum( size(ver('MATLAB'))) > 0 
     x=x(:).';
 end
 
@@ -114,11 +119,18 @@ else
     if f==2, errBar=errBar'; end
 end
 
-if length(x) ~= length(errBar)
+
+% Check for correct x, errbar formats
+x_size = size(x);
+
+if (length(x) ~= length(errBar) && sum( size(ver('MATLAB'))) > 0 )
     error('length(x) must equal length(errBar)')
+elseif( ( length(x) ~= length(errBar) && checkOctave_datestr(x) == false ) ...
+            && sum( size(ver('Octave'))) > 0  )
+    error('length(x) must equal length(errBar) or x must have valid datestr')
 end
 
-
+ 
 %Log the hold status so we don't change
 initialHoldStatus=ishold;
 if ~initialHoldStatus, hold on,  end
@@ -133,14 +145,33 @@ end
 
 
 
+
 function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+        % Determine host application
+    if (sum( size(ver('MATLAB'))) > 0  )
+      hostName = 'MATLAB';
+    elseif (sum(size(ver('Octave'))) > 0)
+      hostName = 'Octave';
+    end % if
+    
     % Plot to get the parameters of the line
-
-    H.mainLine=plot(x,y,lineProps{:});
-
-
+    if hostName == 'MATLAB'
+      H.mainLine=plot(x,y,lineProps{:});
+      
+    elseif hostName == 'Octave'
+      boolxDatestr = checkOctave_datestr(x);
+      if boolxDatestr
+        x = datenum(x);
+        x = x(:).';
+        H.mainLine=plot(x,y,lineProps{:});
+        datetick(gca);
+      else
+        H.mainLine=plot(x,y,lineProps{:});
+      end
+    end
     % Work out the color of the shaded region and associated lines.
     % Here we have the option of choosing alpha or a de-saturated
     % solid colour for the patch surface.
@@ -172,14 +203,23 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
     %remove nans otherwise patch won't work
     xP(isnan(yP))=[];
     yP(isnan(yP))=[];
+    
 
+    if hostName == 'MATLAB'
 
-    if(isdatetime(x))
-        H.patch=patch(datenum(xP),yP,1,'HandleVisibility','off');
-    else
-        H.patch=patch(xP,yP,1,'HandleVisibility','off');
-    end
-
+    
+	  if(isdatetime(x))
+	    H.patch=patch(datenum(xP),yP,1,'HandleVisibility','off');
+	  else
+	    H.patch=patch(xP,yP,1,'HandleVisibility','off');
+	  end
+      
+    elseif hostName == 'Octave'
+      H.patch=patch(xP,yP,1, 'HandleVisibility','off');
+   
+    end %if
+      
+      
     set(H.patch,'facecolor',patchColor, ...
         'edgecolor','none', ...
         'facealpha',faceAlpha)
@@ -190,7 +230,24 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
     H.edge(2)=plot(x,uE,'-','color',edgeColor,'HandleVisibility','off');
 
 
+    if hostName == 'MATLAB'
+      uistack(H.mainLine,'top') % Bring the main line to the top
+    elseif hostName == 'Octave'
+      % create the struct from scratch by temp.
+      H = struct('mainLine', H.mainLine, ...
+      'patch', H.patch, ...
+      'edge', H.edge );
+    end
 
-    uistack(H.mainLine,'top') % Bring the main line to the top
 
-
+function boolDate = checkOctave_datestr(x)
+  %% Simple try/catch for casting datenums, requireing valid datestr
+  boolDate = true;
+  try
+    datenum(x)
+  catch
+    boolDate = false;
+  end
+ 
+    
+ 
