@@ -91,6 +91,10 @@ set(gca,'XTickLabel',[],'YTickLabel',[])
 
 # Change Log
 
+8th Novemeber 2019
+* Merge Octave support from [JarlPed](https://github.com/JarlPed/)
+
+
 24th November 2017
 * Add `patchSaturation` as an optional argument.
 
