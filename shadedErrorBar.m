@@ -149,8 +149,8 @@ end
 function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-        % Determine host application
+
+    % Determine host application
     if (sum( size(ver('MATLAB'))) > 0  )
       hostName = 'MATLAB';
     elseif (sum(size(ver('Octave'))) > 0)
@@ -172,6 +172,7 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
         H.mainLine=plot(x,y,lineProps{:});
       end
     end
+
     % Work out the color of the shaded region and associated lines.
     % Here we have the option of choosing alpha or a de-saturated
     % solid colour for the patch surface.
@@ -192,11 +193,7 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
     lE=y-errBar(2,:);
 
 
-    %Add the patch error bar
-
-
-
-    %Make the patch
+    %Make the patch (the shaded error bar)
     yP=[lE,fliplr(uE)];
     xP=[x,fliplr(x)];
 
@@ -205,24 +202,17 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
     yP(isnan(yP))=[];
     
 
-    if hostName == 'MATLAB'
+    if isdatetime(x) && strcmp(hostName,'MATLAB')
+      H.patch=patch(datenum(xP),yP,1);
+    else
+      H.patch=patch(xP,yP,1);
+    end
 
-    
-	  if(isdatetime(x))
-	    H.patch=patch(datenum(xP),yP,1,'HandleVisibility','off');
-	  else
-	    H.patch=patch(xP,yP,1,'HandleVisibility','off');
-	  end
-      
-    elseif hostName == 'Octave'
-      H.patch=patch(xP,yP,1, 'HandleVisibility','off');
-   
-    end %if
-      
-      
+
     set(H.patch,'facecolor',patchColor, ...
         'edgecolor','none', ...
-        'facealpha',faceAlpha)
+        'facealpha',faceAlpha, ...
+        'HandleVisibility', 'off')
 
 
     %Make pretty edges around the patch. 
@@ -236,7 +226,7 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
       % create the struct from scratch by temp.
       H = struct('mainLine', H.mainLine, ...
       'patch', H.patch, ...
-      'edge', H.edge );
+      'edge', H.edge);
     end
 
 
@@ -248,6 +238,4 @@ function boolDate = checkOctave_datestr(x)
   catch
     boolDate = false;
   end
- 
-    
  
