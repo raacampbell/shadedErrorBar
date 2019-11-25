@@ -173,6 +173,11 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
       end
     end
 
+
+    % Tag the line so we can easily access it
+    H.mainLine.Tag = 'shadedErrorBar_mainLine';
+
+
     % Work out the color of the shaded region and associated lines.
     % Here we have the option of choosing alpha or a de-saturated
     % solid colour for the patch surface.
@@ -212,16 +217,24 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
     set(H.patch,'facecolor',patchColor, ...
         'edgecolor','none', ...
         'facealpha',faceAlpha, ...
-        'HandleVisibility', 'off')
+        'HandleVisibility', 'off', ...
+        'Tag', 'shadedErrorBar_patch')
 
 
     %Make pretty edges around the patch. 
-    H.edge(1)=plot(x,lE,'-','color',edgeColor,'HandleVisibility','off');
-    H.edge(2)=plot(x,uE,'-','color',edgeColor,'HandleVisibility','off');
+    H.edge(1)=plot(x,lE,'-');
+    H.edge(2)=plot(x,uE,'-');
+
+    set([H.edge], 'color',edgeColor, ...
+      'HandleVisibility','off', ...
+      'Tag', 'shadedErrorBar_edge')
 
 
+    % Ensure the main line of the plot is above the other plot elements
     if hostName == 'MATLAB'
-      uistack(H.mainLine,'top') % Bring the main line to the top
+      if strcmp(get(gca,'YAxisLocation'),'left') %Because re-ordering plot elements with yy plot is a disaster
+        uistack(H.mainLine,'top')
+      end
     elseif hostName == 'Octave'
       % create the struct from scratch by temp.
       H = struct('mainLine', H.mainLine, ...
