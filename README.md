@@ -108,4 +108,4 @@ set(gca,'XTickLabel',[],'YTickLabel',[])
 If you wish to contribute please fork the repo, check out the `dev` branch and make your changes there, then file a pull request describing what you did. 
 
 # Licensing 
-This code is licensed under GPL v3. See license file in the repository. 
+This code is licensed under the lesser GPL v3. See `LICENSE` file in the repository. 
