@@ -43,23 +43,23 @@ function varargout=shadedErrorBar(x,y,errBar,varargin)
 % x=1:size(y,2);
 %
 % 1)
-% shadedErrorBar(x,mean(y,1),std(y),'lineprops','g');
+% shadedErrorBar(x,mean(y,1),std(y),'lineProps','g');
 %
 % 2)
-% shadedErrorBar(x,y,{@median,@std},'lineprops',{'r-o','markerfacecolor','r'});
+% shadedErrorBar(x,y,{@median,@std},'lineProps',{'r-o','markerfacecolor','r'});
 %
 % 3)
-% shadedErrorBar([],y,{@median,@(x) std(x)*1.96},'lineprops',{'r-o','markerfacecolor','k'});
+% shadedErrorBar([],y,{@median,@(x) std(x)*1.96},'lineProps',{'r-o','markerfacecolor','k'});
 %
 % 4)
 % Overlay two transparent lines:
 % clf
 % y=randn(30,80)*10; 
 % x=(1:size(y,2))-40;
-% shadedErrorBar(x,y,{@mean,@std},'lineprops','-r','transparent',1);
+% shadedErrorBar(x,y,{@mean,@std},'lineProps','-r','transparent',1);
 % hold on
 % y=ones(30,1)*x; y=y+0.06*y.^2+randn(size(y))*10;
-% shadedErrorBar(x,y,{@mean,@std},'lineprops','-b','transparent',1);
+% shadedErrorBar(x,y,{@mean,@std},'lineProps','-b','transparent',1);
 % hold off
 %
 %
