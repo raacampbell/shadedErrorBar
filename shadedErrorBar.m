@@ -31,6 +31,7 @@ function varargout=shadedErrorBar(x,y,errBar,varargin)
 %               will only be transparent if you set the renderer 
 %               to OpenGL, however this makes a raster image.
 % 'patchSaturation'- [0.2 by default] The saturation of the patch color.
+% 'plotAxes' - handle of axis to plot into. By default this is gca
 %
 %
 %
@@ -42,14 +43,18 @@ function varargout=shadedErrorBar(x,y,errBar,varargin)
 % y=randn(30,80); 
 % x=1:size(y,2);
 %
+%
 % 1)
 % shadedErrorBar(x,mean(y,1),std(y),'lineProps','g');
+%
 %
 % 2)
 % shadedErrorBar(x,y,{@median,@std},'lineProps',{'r-o','markerfacecolor','r'});
 %
+%
 % 3)
 % shadedErrorBar([],y,{@median,@(x) std(x)*1.96},'lineProps',{'r-o','markerfacecolor','k'});
+%
 %
 % 4)
 % Overlay two transparent lines:
@@ -61,6 +66,13 @@ function varargout=shadedErrorBar(x,y,errBar,varargin)
 % y=ones(30,1)*x; y=y+0.06*y.^2+randn(size(y))*10;
 % shadedErrorBar(x,y,{@mean,@std},'lineProps','-b','transparent',1);
 % hold off
+%
+%
+% 5) Target to a specific axis
+% clf
+% a = subplot(1,2,1);
+% subplot(1,2,2);
+% shadedErrorBar(x,mean(y,1),std(y),'lineProps','g','plotAxes',a);
 %
 %
 % Rob Campbell - November 2009
@@ -81,6 +93,7 @@ elseif (sum( size(ver('Octave'))) > 0  )
   params.addParameter('transparent', false, @(x) islogical(x) || x==0 || x==1);
 end
 params.addParameter('patchSaturation', 0.2, @(x) isnumeric(x) && x>=0 && x<=1);
+params.addParameter('plotAxes', gca);
 
 params.parse(varargin{:});
 
@@ -88,6 +101,7 @@ params.parse(varargin{:});
 lineProps =  params.Results.lineProps;
 transparent =  params.Results.transparent;
 patchSaturation = params.Results.patchSaturation;
+plotAxes = params.Results.plotAxes;
 
 if ~iscell(lineProps), lineProps={lineProps}; end
 
@@ -132,12 +146,18 @@ end
 
  
 %Log the hold status so we don't change
-initialHoldStatus=ishold;
-if ~initialHoldStatus, hold on,  end
+initialHoldStatus = ishold(plotAxes);
 
-H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation);
+if ~initialHoldStatus
+  cla(plotAxes,'reset') %Wipe the axes if we are not holding what was there before
+  hold(plotAxes,'on')
+end
 
-if ~initialHoldStatus, hold off, end
+H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation,plotAxes);
+
+if ~initialHoldStatus
+  hold(plotAxes,'off')
+end
 
 if nargout==1
     varargout{1}=H;
@@ -146,30 +166,30 @@ end
 
 
 
-function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
+function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation,plotAxes)
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Determine host application
-    if (sum( size(ver('MATLAB'))) > 0  )
+    if sum( size(ver('MATLAB')) ) > 0
       hostName = 'MATLAB';
-    elseif (sum(size(ver('Octave'))) > 0)
+    elseif sum( size(ver('Octave')) ) > 0
       hostName = 'Octave';
     end % if
     
     % Plot to get the parameters of the line
     if hostName == 'MATLAB'
-      H.mainLine=plot(x,y,lineProps{:});
+      H.mainLine=plot(plotAxes, x, y, lineProps{:});
       
     elseif hostName == 'Octave'
       boolxDatestr = checkOctave_datestr(x);
       if boolxDatestr
         x = datenum(x);
         x = x(:).';
-        H.mainLine=plot(x,y,lineProps{:});
-        datetick(gca);
+        H.mainLine=plot(plotAxes, x, y, lineProps{:});
+        datetick(plotAxes);
       else
-        H.mainLine=plot(x,y,lineProps{:});
+        H.mainLine=plot(plotAxes, x, y, lineProps{:});
       end
     end
 
@@ -185,22 +205,22 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
     edgeColor=mainLineColor+(1-mainLineColor)*0.55;
 
     if transparent
-        faceAlpha=patchSaturation;
-        patchColor=mainLineColor;
+        faceAlpha = patchSaturation;
+        patchColor = mainLineColor;
     else
-        faceAlpha=1;
-        patchColor=mainLineColor+(1-mainLineColor)*(1-patchSaturation);
+        faceAlpha = 1;
+        patchColor = mainLineColor + (1-mainLineColor) * (1-patchSaturation);
     end
 
 
     %Calculate the error bars
-    uE=y+errBar(1,:);
-    lE=y-errBar(2,:);
+    uE = y + errBar(1,:);
+    lE = y - errBar(2,:);
 
 
     %Make the patch (the shaded error bar)
-    yP=[lE,fliplr(uE)];
-    xP=[x,fliplr(x)];
+    yP = [lE,fliplr(uE)];
+    xP = [x,fliplr(x)];
 
     %remove nans otherwise patch won't work
     xP(isnan(yP))=[];
@@ -208,22 +228,23 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
     
 
     if isdatetime(x) && strcmp(hostName,'MATLAB')
-      H.patch=patch(datenum(xP),yP,1);
+      H.patch = patch(datenum(xP),yP,1,'parent',plotAxes);
     else
-      H.patch=patch(xP,yP,1);
+      H.patch = patch(xP,yP,1,'parent',plotAxes);
     end
 
 
-    set(H.patch,'facecolor',patchColor, ...
-        'edgecolor','none', ...
-        'facealpha',faceAlpha, ...
-        'HandleVisibility', 'off', ...
-        'Tag', 'shadedErrorBar_patch')
+    set(H.patch, ...
+      'facecolor', patchColor, ...
+      'edgecolor', 'none', ...
+      'facealpha', faceAlpha, ...
+      'HandleVisibility', 'off', ...
+      'Tag', 'shadedErrorBar_patch')
 
 
     %Make pretty edges around the patch. 
-    H.edge(1)=plot(x,lE,'-');
-    H.edge(2)=plot(x,uE,'-');
+    H.edge(1) = plot(plotAxes, x, lE, '-');
+    H.edge(2) = plot(plotAxes, x, uE, '-');
 
     set([H.edge], 'color',edgeColor, ...
       'HandleVisibility','off', ...
@@ -232,7 +253,7 @@ function H = makePlot(x,y,errBar,lineProps,transparent,patchSaturation)
 
     % Ensure the main line of the plot is above the other plot elements
     if hostName == 'MATLAB'
-      if strcmp(get(gca,'YAxisLocation'),'left') %Because re-ordering plot elements with yy plot is a disaster
+      if strcmp(get(plotAxes,'YAxisLocation'),'left') %Because re-ordering plot elements with yy plot is a disaster
         uistack(H.mainLine,'top')
       end
     elseif hostName == 'Octave'
