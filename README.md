@@ -1,5 +1,5 @@
 # shadedErrorBar
-[![View raacampbell/shadedErrorBar on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://uk.mathworks.com/matlabcentral/fileexchange/26311-raacampbell-shadederrorbar)
+[![View raacampbell/shadedErrorBar on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://uk.mathworks.com/matlabcentral/fileexchange/26311-raacampbell-shadederrorbar) [![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=raacampbell/shadedErrorBar) 
 
 `shadedErrorBar` is a MATLAB function that creates a continuous shaded error region around a line rather than discrete bars. 
 The error region can either be specified explicitly or calculated on the fly based upon function handles. 
