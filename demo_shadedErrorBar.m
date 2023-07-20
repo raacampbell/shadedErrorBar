@@ -1,4 +1,4 @@
-function H=demoOctave_shadedErrorBar
+function H = demo_shadedErrorBar
 % demo function for shadedErrorBar
 %
 % function demo_shadedErrorBar
@@ -6,7 +6,7 @@ function H=demoOctave_shadedErrorBar
 % No input or output arguments.
 %
 %
-% 
+% Rob Campbell 
 
 
 
