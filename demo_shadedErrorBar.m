@@ -1,4 +1,4 @@
-function H = demo_shadedErrorBar
+function demo_shadedErrorBar
 % demo function for shadedErrorBar
 %
 % function demo_shadedErrorBar
@@ -7,7 +7,6 @@ function H = demo_shadedErrorBar
 %
 %
 % Rob Campbell 
-
 
 
 
@@ -69,7 +68,6 @@ grid on
 
 
 
-
 subplot(rows,cols,3)
 % Post-hoc modifications of line properties
 
@@ -82,7 +80,7 @@ y = bsxfun(@plus,y,yP);
 
 %Set face and edge properties
 if (sum( size(ver('MATLAB'))) > 0  )
- s = shadedErrorBar(x, y, {@mean,@std}, 'lineprops', '-r')
+ s = shadedErrorBar(x, y, {@mean,@std}, 'lineprops', '-r');
  set(s.edge,'LineWidth',2,'LineStyle',':')
  s.mainLine.LineWidth = 5;
  s.patch.FaceColor = [0.5,0.25,0.25];
